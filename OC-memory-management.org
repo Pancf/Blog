@@ -1,0 +1,29 @@
+* Objective-C Memory Management
+
+#+AUTHOR: Chenfeng Pan
+#+DATE: 12/16/2019
+
+** 引用计数
+
+关于Objective-C的内存管理，一直以来我都把目光放在引用计数（Reference Counting）上。但是我逐渐发现，真正的核心其实是所有权（Ownership Interest），Reference Count只不过是这个核心的实现方式。
+
+一个指针持有一个对象的所有权，调用~[obj retain]~使对象的引用计数加1，当指针放弃所有权的时候，调用~[obj release]~使对象的引用计数减1。在各种指针持有、放弃所有权的过程中，对象引用计数不断发生变化，直到变为0时，在修改引用计数的方法里会自动释放对象所占用的这块堆内存。引用计数是用来保障对象的生命周期符合用户（程序员）预期的技术。用户真正需要关心的是，自己的哪些指针需要持有一个对象的所有权。
+
+** 当一个方法要返回一个对象时
+
+在一个方法里创建一个对象，经过一系列处理最后返回，可能是大家习以为常的事情。例如
+
+#+BEGIN_SRC Objective-c
+- (id)foo {
+  id a = [[NSObject alloc] init];
+  return a;
+}
+#+END_SRC
+
+假设ARC只是在foo方法返回前插入~[a release]~，而没有对返回值做额外处理，那么在调用者有机会retain之前，对象就已经被销毁了。为了解决这个问题，可以设想两种方式：
+
+1. 约定方法把所有权转移给调用者。在这个设想中，ARC不在foo中插入~[a release]~，而是把所有权随返回值一起交给调用者。因此，~id _a = [self foo]~除了获得指针，还承担了释放对象的责任，由ARC在调用方不再需要对象时插入release。注意，这是在推演一种返回机制，并非foo在ARC下的默认返回约定。
+
+2. 不把所有权转移给调用者，而是转移给一个第三方保管，然后在将来的某个时刻由第三方代替指针a放弃所有权。这个第三方就是autorelease pool，autorelease pool销毁时会批量执行之前登记的release；主线程的事件循环通常会在每轮Runloop结束时清理autorelease pool。这样在foo方法中创建的对象生命周期就超过了foo方法，而调用者如果持有所有权，那么autorelease pool执行release后，对象依然可以继续存在。
+
+ARC自动管理所有权的取得与释放，但仍遵循方法的返回值所有权约定。对于不转移所有权的返回值，仍可能使用autorelease；编译器和运行时可以优化掉部分retain/autorelease操作。
