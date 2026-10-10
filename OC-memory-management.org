@@ -1,4 +1,4 @@
-* Objective-C Memory Management
+#+TITLE: Objective-C Memory Management
 
 #+AUTHOR: Chenfeng Pan
 #+DATE: 12/16/2019

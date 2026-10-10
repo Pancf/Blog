@@ -1,11 +1,11 @@
-* Objective-C数组遍历方式的对比
+#+TITLE: Objective-C数组遍历方式的对比
 
 #+AUTHOR: Chenfeng Pan
 #+DATE: 12/15/2019
 
 在Objective-C中，对NSArray或者NSMutableArray遍历有三种方式，分别为
 
-方式一
++ 方式一
 
 #+BEGIN_SRC objc
 NSArray<NSNumber *> *arr = @[@1, @2, @3];
@@ -14,7 +14,7 @@ for (int i = 0; i < arr.count; ++i) {
 }
 #+END_SRC
 
-方式二
++ 方式二
 
 #+BEGIN_SRC objc
 for (NSNumber *obj in arr) {
@@ -22,7 +22,7 @@ for (NSNumber *obj in arr) {
 }
 #+END_SRC
 
-方式三
++ 方式三
 
 #+BEGIN_SRC objc
 [arr enumerateObjectsUsingBlock:];

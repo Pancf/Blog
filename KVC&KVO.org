@@ -1,0 +1,36 @@
+#+TITLE: KVC & KVO
+
+#+AUTHOR: Chenfeng Pan
+#+DATE: 11/25/2019
+
+* KVC
++ Adopt to ~NSKeyValueCoding~ protocol
++ 继承NSObject的类有默认的实现
++ 为instance variable的read&write提供message interface，前提是accessor methods或者instance variable的命名符合Cocoa的规范
++ 现在的Objective-C定义的@property编译器会默认合成getter、setter，当一个类中的属性多了以后，method_list中的accessor method会迅速膨胀，只不过自己不需要写accessor method容易忘了这一点
++ KVO需要KVC的支撑，KVO的通知不仅会在override setter中发送，也会在KVC的各种方法中发出
++ Core Data和macOS开发中常用的cocoa bindings都依赖KVC
++ Key是辨认某个属性的字符串，根据惯例一般是代码中@property的名字
++ KVC可以传播下去，只要中间涉及的属性都是KVC compliant的。Swift的KVC使用 ~#keyPath~ 表达式，会在编译时做检测，防止出现访问不存在的property。Objective-C有扩展的宏可以达到类似效果
++ 使用KVC操作集合属性中的内容时，可以使用 ~mutableArrayValueForKey:~ 返回代理对象。按文档说明，此方法效率比复制一个可变集合修改后再复制回去高，有时候甚至比直接操作一个mutable集合高（这一点暂时没想通）
++ KVC操作scalar或者structure时，默认实现会自动进行非对象和 ~NSNumber~ 或 ~NSValue~ 之间的转换，如果 ~setValue:ForKey:~ 的value是nil，默认实现会调用 ~setNilValue:ForKey:~ ，该方法的默认实现是抛异常，override可以截获
++ Search Patterns for Getter
+  1. 搜索方法是否含有方法 get<Key>, <key>, is<Key> or _<key> in that order，如果有则goto step5
+  2. 如果第一步没有找到，搜索countOf<Key>, objectIn<Key>AtIndex:, <key>AtIndexes:，如果第一个方法存在，后两个方法至少有一个，那么返回一个能响应NSArray所有方法的collection proxy对象，代理对象会将收到的方法转换成之前三个方法的组合。即，尽管这个KVC-Compliant对象可能不是NSArray，但对使用者来说就像是一个NSArray一样。
+  3. 搜索countOf<Key>, enumerateOf<Key>, memberOf<Key>: 是否同时存在，若存在则返回一个能响应NSSet所有方法的proxy
+  4. 如果Step1、2、3都没结果，并且accessInstanceVariableDirectly return YES，则搜索是否存在_<key>，_is<Key>，<key>，is<Key>的instance variable，如果有goto step5，没有goto step6
+  5. 如果取到的是object，直接返回。如果是scalar，封装为 ~NSNumber~ 返回；如果是structure，封装为 ~NSValue~ 返回
+  6. 调用 ~valueForUndefinedKey:~ ，该方法默认实现是抛出异常
++ Search Patterns for Setter
+  1. 搜索set<Key>: or _set<Key>: 的方法，若找到直接设置
+  2. 若step1失败，且accessInstanceVariableDirectly return YES，查找_<key>，_is<Key>，<key>，is<Key>的instance variable是否存在，有的话直接设置
+  3. 调用 ~setValue:forUndefinedKey:~ ，默认实现是抛出异常
+
+* KVO
++ Cocoa binding重度依赖于KVO，一般是controller observe model的properties，也存在model observe自己或其他model的properties的情况，这种是数据依赖
++ KVO实现原理，当某个对象成为observed object时，编译时会生成一个继承原有类的子类，子类中override对应的property setter，由新的setter来完成notify的功能。此外还会override ~+(Class)class~ 方法，仍旧返回原有类，谓之isa swizzling。但通过runtime的 ~object_getClass~ 会返回真正的匿名类
++ 使用时要注意的点
+  - 注册函数不会retain observer、observed object、context
+  - 不再需要接受notification时，observer可以主动移除，最迟在observer析构时需要移除，否则会出现非法地址访问EXC_BAD_ACCESS
+  - ~addObserver:~ 和 ~removeObserver:~ 必须一一对应，如果未监听就remove会抛异常，同样这也意味着不能重复remove
+  - 若一个property依赖于其他值，则类需要override ~+(NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key~ 或者增加 ~+(NSSet *)keyPathsForValuesAffecting<Key>~ ，返回依赖的property的名字集合。但是在category中定义的computed property没办法通过override来完成，因为不建议在category中去override方法，在category中应该通过增加方法来实现
