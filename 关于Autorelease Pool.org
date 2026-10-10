@@ -56,6 +56,6 @@ if (page->lessThanHalfFull()) {
 }
 #+END_SRC
 
-其实就是跟实现动态容量数组的原理一样，当向数组中添加元素至~size == capcity~时，数组会动态扩容，一般是~capcity *= 2~。反过来当从数组中移除元素时，只有~size < x * capcity~时才会缩小capcity，释放一部分内存空间。
+其实就是跟实现动态容量数组的原理一样，当向数组中添加元素至 ~size == capcity~ 时，数组会动态扩容，一般是 ~capcity *= 2~ 。反过来当从数组中移除元素时，只有 ~size < x * capcity~ 时才会缩小capcity，释放一部分内存空间。
 
 网络上这三篇关于Autorelease Pool的文章都是还不错的--雷纯峰的[[https://blog.leichunfeng.com/blog/2015/05/31/objective-c-autorelease-pool-implementation-principle/][Objective-C Autorelease Pool的实现原理]]，sunnyxx的[[https://blog.sunnyxx.com/2014/10/15/behind-autorelease/][黑幕背后的AutoRelease]]，Draveness的[[https://draveness.me/autoreleasepool][自动释放池的前世今生--深入解析autoreleasepool]]。我写这篇的目的就是补充一下我认为值得补充的东西。
