@@ -1,7 +1,7 @@
 #+TITLE: iOS图形绘制整理
-
 #+AUTHOR: Chenfeng Pan
 #+DATE: 12/21/2019
+#+CATEGORY: Programming
 
 常规iOS App开发一般只需要用好基于OpenGL的Core Graphics、Core Animation、Core Image即可，一般只有游戏、相机、视频类应用会需要跟OpenGL或者Metal直接打交道的需求。
 

@@ -1,7 +1,7 @@
 #+TITLE: Objective-C数组遍历方式的对比
-
 #+AUTHOR: Chenfeng Pan
 #+DATE: 12/15/2019
+#+CATEGORY: Programming
 
 在Objective-C中，对NSArray或者NSMutableArray遍历有三种方式，分别为
 

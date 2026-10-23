@@ -1,7 +1,7 @@
 #+TITLE: 程序员的自我修养笔记
-
 #+AUTHOR: Chenfeng Pan
 #+DATE: 11/29/2019
+#+CATEGORY: Programming
 
 * 并发
 ** 并发常用手段
