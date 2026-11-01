@@ -1,0 +1,39 @@
+#+TITLE: CoreFoundation相关
+#+AUTHOR: Chenfeng Pan
+#+DATE: 12/16/2019
+#+CATEGORY: Programming
+
++ NSMutableArray和NSArray的区别在于const，而在C中使用const type的地方都可以使用type，反之则不行，因此不难理解为什么NSMutableType是NSType的子类。
+#+BEGIN_SRC ObjC
+  typedef const struct __CFArray * CFArrayRef;
+  typedef struct __CFArray * CFMutableArrayRef;
+#+END_SRC
+
++ CFTypeRef是Core Foundation体系中的根父类
+#+BEGIN_QUOTE
+Core Foundation provides several polymorphic functions. These functions can take any Core Foundation object as a parameter and (in one instance, CFRetain) can return any Core Foundation object. These parameters and return values are given the type of CFTypeRef, a generic object-reference type. CFType is analogous to a root class in object-oriented languages because its functions can be reused by all other objects.
+#+END_QUOTE
+
++ Core Foundation对象分为可编辑固定长度、可编辑变长、不可编辑
+[[https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFDesignConcepts/Articles/VarietyOfObjects.html][Varieties of Objects]]
+
++ 根据CoreFoundation接口命名规范，函数中带Get返回的对象caller没有所有权，Copy和Create有。
+
++ 使用CFIndex、CFTypeID这些typedef过的基础类型，它们会根据寻址总线宽度变化（C语言代码中常见操作）。
+
++ Core Foundation中opaque type的自省主要通过CFCopyDescription和CFGetTypeID来完成，后者返回一个代表类型的数字，同一版本中类型的数字ID是一致的，不同版本的Core Foundation库可能会不一样。跟Objective-C的isa自省不一样。
+
++ Toll Bridging Object在转换时调整所有权的宏
+#+BEGIN_QUOTE
+__bridge transfers a pointer between Objective-C and Core Foundation with no transfer of ownership.
+
+__bridge_retained or CFBridgingRetain casts an Objective-C pointer to a Core Foundation pointer and also transfers ownership to you.
+You are responsible for calling CFRelease or a related function to relinquish ownership of the object.
+
+__bridge_transfer or CFBridgingRelease moves a non-Objective-C pointer to Objective-C and also transfers ownership to ARC.
+ARC is responsible for relinquishing ownership of the object.
+#+END_QUOTE
+
++ Core Foundation中的copy函数是浅拷贝，深拷贝需要自己实现。
+
++ X86是little endian，即多字节的数据最低位存在低地址，读取时从高地址开始读。PowerPC是big endian。网络字节序也是big endian
